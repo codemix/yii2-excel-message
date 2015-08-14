@@ -23,19 +23,31 @@ class ExcelMessageController extends Controller
     public $defaultAction = 'export';
 
     /**
-     * @var string Comma separated list of languages to ignore
+     * @var string Comma separated list of languages to process.
+     */
+    public $languages;
+
+    /**
+     * @var string Comma separated list of categories to process.
+     */
+    public $categories;
+
+    /**
+     * @var string Comma separated list of languages to ignore.
+     * Ignored if `--languages` option is set.
      */
     public $ignoreLanguages;
 
     /**
-     * @var string Comma separated list of categories to ignore
+     * @var string Comma separated list of categories to ignore.
+     * Ignored if `--categories` option is set.
      */
     public $ignoreCategories;
 
     /**
      * @var null|string The line height to set on created Excel files.
      * By default the line height is set to auto, but this is broken for LibreOffice Calc.
-     * You can try values like `60` here to set a fixed line height instead.
+     * You can try values like `50` here to set a fixed line height instead.
      */
     public $lineHeight;
 
@@ -44,7 +56,7 @@ class ExcelMessageController extends Controller
      */
     public function options($actionID)
     {
-        $options = ['color', 'ignoreLanguages', 'ignoreCategories'];
+        $options = ['color', 'languages', 'categories', 'ignoreLanguages', 'ignoreCategories'];
         if ($actionID==='export') {
             $options[] = 'lineHeight';
         }
@@ -52,14 +64,14 @@ class ExcelMessageController extends Controller
     }
 
     /**
-     * Adds all new translations from PHP message files to an Excel file.
+     * Creates Excel files with translations from PHP message files.
      *
-     * This command will go through all configured PHP message files and
-     * check for new translations. It will then write the missing tranlsations
+     * By default this command will go through all configured PHP message files and
+     * check for new translations. It will then write those missing translations
      * to an Excel file, using one file per language and one sheet per category.
      *
      * @param string $configFile The path or alias of the message configuration file.
-     * @param string $excelDir The path or alias to the output directory for the Excel files
+     * @param string $excelDir The path or alias to the output directory for the Excel files.
      * @param string $type The type of messages to include. Either 'new' (default) or 'all'.
      * @throws Exception on failure.
      */
@@ -69,14 +81,14 @@ class ExcelMessageController extends Controller
         $messages = [];
         $sourceLanguage = Yii::$app->language;
         foreach ($config['languages'] as $language) {
-            if ($this->languageIgnored($language)) {
+            if (!$this->languageIncluded($language)) {
                 $this->stdout("Skipping language $language.\n", Console::FG_YELLOW);
                 continue;
             }
             $dir = $config['messagePath'] . DIRECTORY_SEPARATOR . $language;
             foreach (glob("$dir/*.php") as $file) {
                 $category = pathinfo($file, PATHINFO_FILENAME);
-                if ($this->categoryIgnored($category)) {
+                if (!$this->categoryIncluded($category)) {
                     $this->stdout("Skipping category $category.\n", Console::FG_YELLOW);
                     continue;
                 }
@@ -108,17 +120,15 @@ class ExcelMessageController extends Controller
     /**
      * Import the translations from Excel files into PHP message files.
      *
-     * This command will go through all Excel files in the given directory, read out the
-     * translations and update the respective PHP message file. The files must be in the
-     * same structure as created by the export command: One file per language, with the
-     * language code as filename, one sheet per category, source is in column A, translation
-     * in column B. The first line gets ignored.
-     *
-     * The command will only update non-empty translations, of course.
+     * By default this command will go through all found Excel files in the given directory,
+     * read out the non-empty translations and update the respective PHP message files. The
+     * files must be in the same structure as created by the export command: One file per
+     * language, with the language code as filename, one sheet per category, source is in
+     * column A, translation in column B. The first line gets ignored.
      *
      * @param string $configFile The path or alias of the message configuration file.
-     * @param string $excelDir The path or alias to the input directory for the Excel files
-     * @param string $extension The Excel file extension. Default is `xlsx`.
+     * @param string $excelDir The path or alias to the input directory for the Excel files.
+     * @param string $extension The Excel file extension. Default is 'xlsx'.
      * @return void
      */
     public function actionImport($configFile, $excelDir, $extension = 'xlsx')
@@ -127,13 +137,13 @@ class ExcelMessageController extends Controller
         $messages = [];
         foreach (glob(rtrim($excelDir, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'*.'.$extension) as $file) {
             $language = pathinfo($file, PATHINFO_FILENAME);
-            if ($this->languageIgnored($language)) {
+            if (!$this->languageIncluded($language)) {
                 $this->stdout("Skipping language $language.\n", Console::FG_YELLOW);
                 continue;
             }
             $excel = PHPExcel_IOFactory::load($file);
             foreach ($excel->getSheetNames() as $category) {
-                if ($this->categoryIgnored($category)) {
+                if (!$this->categoryIncluded($category)) {
                     $this->stdout("Skipping category $category.\n", Console::FG_YELLOW);
                     continue;
                 }
@@ -305,19 +315,27 @@ EOD;
 
     /**
      * @param string $language
-     * @return bool whether this language should be ignored
+     * @return bool whether this language should be processed
      */
-    protected function languageIgnored($language)
+    protected function languageIncluded($language)
     {
-        return $this->ignoreLanguages===null ? false : in_array($language, explode(',', $this->ignoreLanguages));
+        if ($this->languages===null) {
+            return $this->ignoreLanguages===null ? false : in_array($language, explode(',', $this->ignoreLanguages));
+        } else {
+            return in_array($language, explode(',', $this->languages));
+        }
     }
 
     /**
      * @param string $category
-     * @return bool whether this category
+     * @return bool whether this category should be processed
      */
-    protected function categoryIgnored($category)
+    protected function categoryIncluded($category)
     {
-        return $this->ignoreCategories===null ? false : in_array($category, explode(',', $this->ignoreCategories));
+        if ($this->categories===null) {
+            return $this->ignoreCategories===null ? true : !in_array($category, explode(',', $this->ignoreCategories));
+        } else {
+            return in_array($category, explode(',', $this->categories));
+        }
     }
 }
