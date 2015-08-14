@@ -1,7 +1,6 @@
 Yii2 Excel Message
 ==================
 
-[![Build Status](https://secure.travis-ci.org/codemix/yii2-excel-message.png)](http://travis-ci.org/codemix/yii2-excel-message)
 [![Latest Stable Version](https://poser.pugx.org/codemix/yii2-excel-message/v/stable.svg)](https://packagist.org/packages/codemix/yii2-excel-message)
 [![Total Downloads](https://poser.pugx.org/codemix/yii2-excel-message/downloads)](https://packagist.org/packages/codemix/yii2-excel-message)
 [![Latest Unstable Version](https://poser.pugx.org/codemix/yii2-excel-message/v/unstable.svg)](https://packagist.org/packages/codemix/yii2-excel-message)
@@ -50,7 +49,7 @@ Now you're ready to use the extension.
 ./yii excel-message messages/config.php /output/dir
 ```
 
-## Update PHP message files with translations from Excel files
+## Update PHP message files from Excel files
 
 ```
 ./yii excel-message/import messages/config.php /input/dir xlsx
