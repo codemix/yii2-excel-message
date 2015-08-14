@@ -31,9 +31,10 @@ class ExcelMessageController extends Controller
      *
      * @param string $configFile The path or alias of the message configuration file.
      * @param string $excelDir The path or alias to the output directory for the Excel files
+     * @param string $type The type of messages to include. Either 'new' (default) or 'all'.
      * @throws Exception on failure.
      */
-    public function actionExport($configFile, $excelDir)
+    public function actionExport($configFile, $excelDir, $type = 'new')
     {
         $config = $this->checkArgs($configFile, $excelDir);
         $messages = [];
@@ -43,7 +44,11 @@ class ExcelMessageController extends Controller
             foreach (glob("$dir/*.php") as $file) {
                 $this->stdout("Reading $file ... ", Console::FG_GREEN);
                 $category = pathinfo($file, PATHINFO_FILENAME);
-                foreach (array_filter(require($file), function ($v) { return $v===''; }) as $source => $translation) {
+                $existing = require($file);
+                if ($type==='new') {
+                    $existing = array_filter($existing, function ($v) { return $v===''; });
+                }
+                foreach ($existing as $source => $translation) {
                     if (!isset($messages[$language])) {
                         $messages[$language] = [];
                     }
