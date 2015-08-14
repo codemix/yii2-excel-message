@@ -55,7 +55,7 @@ class ExcelMessageController extends Controller
                     if (!isset($messages[$language][$category])) {
                         $messages[$language][$category] = [];
                     }
-                    $messages[$language][$category][] = $source;
+                    $messages[$language][$category][$source] = $translation;
                 }
                 $this->stdout("Done.\n", Console::FG_GREEN);
             }
@@ -174,9 +174,13 @@ class ExcelMessageController extends Controller
                     ]
                 ]);
                 $row = 2;
-                foreach ($sources as $source) {
-                    $sheet->setCellValue('A'.$row, $source);
+                foreach ($sources as $message => $translation) {
+                    $sheet->setCellValue('A'.$row, $message);
                     $sheet->getStyle('A'.$row)->getAlignment()->setWrapText(true);
+                    if ($translation!=='') {
+                        $sheet->setCellValue('B'.$row, $translation);
+                        $sheet->getStyle('B'.$row)->getAlignment()->setWrapText(true);
+                    }
                     // This does not work with LibreOffice Calc, see:
                     // https://github.com/PHPOffice/PHPExcel/issues/588
                     $sheet->getRowDimension($row)->setRowHeight(-1);
