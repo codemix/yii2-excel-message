@@ -23,6 +23,24 @@ class ExcelMessageController extends Controller
     public $defaultAction = 'export';
 
     /**
+     * @var string Comma separated list of languages to ignore
+     */
+    public $ignoreLanguages;
+
+    /**
+     * @var string Comma separated list of categories to ignore
+     */
+    public $ignoreCategories;
+
+    /**
+     * @inheritdoc
+     */
+    public function options($actionID)
+    {
+        return ['color', 'ignoreLanguages', 'ignoreCategories'];
+    }
+
+    /**
      * Adds all new translations from PHP message files to an Excel file.
      *
      * This command will go through all configured PHP message files and
@@ -40,10 +58,18 @@ class ExcelMessageController extends Controller
         $messages = [];
         $sourceLanguage = Yii::$app->language;
         foreach ($config['languages'] as $language) {
+            if ($this->languageIgnored($language)) {
+                $this->stdout("Skipping language $language.\n", Console::FG_YELLOW);
+                continue;
+            }
             $dir = $config['messagePath'] . DIRECTORY_SEPARATOR . $language;
             foreach (glob("$dir/*.php") as $file) {
-                $this->stdout("Reading $file ... ", Console::FG_GREEN);
                 $category = pathinfo($file, PATHINFO_FILENAME);
+                if ($this->categoryIgnored($category)) {
+                    $this->stdout("Skipping category $category.\n", Console::FG_YELLOW);
+                    continue;
+                }
+                $this->stdout("Reading $file ... ", Console::FG_GREEN);
                 $existing = require($file);
                 if ($type==='new') {
                     $existing = array_filter($existing, function ($v) { return $v===''; });
@@ -88,10 +114,18 @@ class ExcelMessageController extends Controller
     {
         $config = $this->checkArgs($configFile, $excelDir);
         $messages = [];
-        foreach (glob($excelDir.DIRECTORY_SEPARATOR.'*.'.$extension) as $file) {
+        foreach (glob(rtrim($excelDir, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'*.'.$extension) as $file) {
             $language = pathinfo($file, PATHINFO_FILENAME);
+            if ($this->languageIgnored($language)) {
+                $this->stdout("Skipping language $language.\n", Console::FG_YELLOW);
+                continue;
+            }
             $excel = PHPExcel_IOFactory::load($file);
             foreach ($excel->getSheetNames() as $category) {
+                if ($this->categoryIgnored($category)) {
+                    $this->stdout("Skipping category $category.\n", Console::FG_YELLOW);
+                    continue;
+                }
                 $sheet = $excel->getSheetByName($category);
                 $row = 2;
                 while (($source = $sheet->getCellByColumnAndRow(0,$row)->getValue())!==null) {
@@ -157,7 +191,7 @@ class ExcelMessageController extends Controller
     protected function writeToExcelFiles($messages, $excelDir)
     {
         foreach ($messages as $language => $categories) {
-            $file = $excelDir.DIRECTORY_SEPARATOR.$language.'.xlsx';
+            $file = rtrim($excelDir, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.$language.'.xlsx';
             $this->stdout("Writing Excel file for $language to $file ... ", Console::FG_GREEN);
             $excel = new PHPExcel();
             $index = 0;
@@ -256,5 +290,23 @@ EOD;
             }
             $this->stdout("\n\n");
         }
+    }
+
+    /**
+     * @param string $language
+     * @return bool whether this language should be ignored
+     */
+    protected function languageIgnored($language)
+    {
+        return $this->ignoreLanguages===null ? false : in_array($language, explode(',', $this->ignoreLanguages));
+    }
+
+    /**
+     * @param string $category
+     * @return bool whether this category
+     */
+    protected function categoryIgnored($category)
+    {
+        return $this->ignoreCategories===null ? false : in_array($category, explode(',', $this->ignoreCategories));
     }
 }

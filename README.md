@@ -85,3 +85,10 @@ messages in column `A`, translations in column `B`, first line is skipped.
 
 You can also pass a third parameter with the file extension. Default is `xlsx` -
 but PHPExcel should also autodetect other Excel formats 
+
+## Options
+
+Option  | Description
+------- | -----------
+`--ignoreLanguages=aa,bb,cc` | Comma separated list of languages to ignore
+`--ignoreCategories=category1,category2` | Comma separated list of categories to ignore
