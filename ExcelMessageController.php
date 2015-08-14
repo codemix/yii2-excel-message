@@ -33,11 +33,22 @@ class ExcelMessageController extends Controller
     public $ignoreCategories;
 
     /**
+     * @var null|string The line height to set on created Excel files.
+     * By default the line height is set to auto, but this is broken for LibreOffice Calc.
+     * You can try values like `60` here to set a fixed line height instead.
+     */
+    public $lineHeight;
+
+    /**
      * @inheritdoc
      */
     public function options($actionID)
     {
-        return ['color', 'ignoreLanguages', 'ignoreCategories'];
+        $options = ['color', 'ignoreLanguages', 'ignoreCategories'];
+        if ($actionID==='export') {
+            $options[] = 'lineHeight';
+        }
+        return $options;
     }
 
     /**
@@ -217,7 +228,7 @@ class ExcelMessageController extends Controller
                     }
                     // This does not work with LibreOffice Calc, see:
                     // https://github.com/PHPOffice/PHPExcel/issues/588
-                    $sheet->getRowDimension($row)->setRowHeight(-1);
+                    $sheet->getRowDimension($row)->setRowHeight($this->lineHeight===null ? -1 : $this->lineHeight);
                     $row++;
                 }
             }

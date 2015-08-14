@@ -92,3 +92,4 @@ Option  | Description
 ------- | -----------
 `--ignoreLanguages=aa,bb,cc` | Comma separated list of languages to ignore
 `--ignoreCategories=category1,category2` | Comma separated list of categories to ignore
+`--lineHeight=x` | `export` only: The line height to set on the excel file. The default is *auto* but this [does not work](https://github.com/PHPOffice/PHPExcel/issues/588) if the file is openend in LibreOffice Calc. So you can set a fixed line height like `50` here as a workaround.
