@@ -62,6 +62,8 @@ to column `B`.
 
 The files will be in `Excel2007` format with `xlsx` extension.
 
+If you want a file with all translations instead, pass `all` as 3rd argument.
+
 > Note: You must use 'php' as `format` in your message configuration.
 
 ## Update PHP message files from Excel files
