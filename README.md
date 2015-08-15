@@ -22,11 +22,11 @@ send them to your translators and read them back into your message files.
 
 ## Installation
 
-Install the package through [composer](http://getcomposer.org):
+Install the package with [composer](http://getcomposer.org).
 
     composer require codemix/yii2-excel-message
 
-And then add this to your console application configuration:
+Then update your console configuration:
 
 ```php
 <?php
@@ -36,11 +36,9 @@ return [
             'class' => 'codemix\excelmessage\ExcelMessageController'
         ]
     ]
+    // ...
 ];
 ```
-
-Now you're ready to use the extension.
-
 
 ## Creating Excel files with new translations
 
@@ -51,15 +49,14 @@ configuration and the output directory where the files should be written to:
 ./yii excel-message messages/config.php /output/dir
 ```
 
-This will create one file per language with one sheet per category each. The
-source messages are listed in column `A` and the translations can then be added
-to column `B`.
+This will create one file per language (filename == language) with one sheet per
+category. The source messages are listed in column `A`. Translators should add their
+translations to column `B`.
 
 The files will be in `Excel2007` format with `xlsx` extension.
 
-If you want a file with all translations instead, pass `all` as 3rd argument.
-
-You can also export only certain languages or categories:
+If you want a file with all translations instead, pass `all` as 3rd argument. You can
+also export only certain languages or categories:
 
 ```
 ./yii excel-message --languages=de,fr --categories=nav,app messages/config.php /output/dir
