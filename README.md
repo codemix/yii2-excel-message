@@ -1,7 +1,3 @@
-# WIP This extension is still considered alpha stage!
-
-Please use at your own risk - and leave feedback so that we can improve it! Thanks!
-
 Yii2 Excel Message
 ==================
 
@@ -12,24 +8,23 @@ Yii2 Excel Message
 [![License](https://poser.pugx.org/codemix/yii2-excel-message/license.svg)](https://packagist.org/packages/codemix/yii2-excel-message)
 
 
-Translate new messages via Excel files.
+Translate messages via Excel files.
 
 
 ## Features
 
-With this extension you can export your new messages from PHP message files to
-Excel, send them to your translators and read them back in to update your
-message files.
+With this extension you can export messages from PHP message files to Excel,
+send them to your translators and read them back into your message files.
 
-To read and write to and from Excel file, we use the excellent
-[PHPExcel](https://github.com/PHPOffice/PHPExcel) package.
+> **Note:** To read and write to and from Excel file, we use the excellent
+> [PHPExcel](https://github.com/PHPOffice/PHPExcel) package.
 
 
 ## Installation
 
 Install the package through [composer](http://getcomposer.org):
 
-    composer require codemix/yii2-excel-message@dev
+    composer require codemix/yii2-excel-message
 
 And then add this to your console application configuration:
 
@@ -49,7 +44,7 @@ Now you're ready to use the extension.
 
 ## Creating Excel files with new translations
 
-To create Excel files with new  translations, you need to supply the message
+To create Excel files with new  translations, you need to supply the Yii2 message
 configuration and the output directory where the files should be written to:
 
 ```
@@ -64,27 +59,34 @@ The files will be in `Excel2007` format with `xlsx` extension.
 
 If you want a file with all translations instead, pass `all` as 3rd argument.
 
-> Note: You must use 'php' as `format` in your message configuration.
+You can also export only certain languages or categories:
+
+```
+./yii excel-message --languages=de,fr --categories=nav,app messages/config.php /output/dir
+```
 
 ## Update PHP message files from Excel files
 
-To update your existing message files from the updated Excel files you
-again need to supply the message configuration and the directory path
-where your Excel files reside:
+After you receive the Excel files back from your translators you can update your
+PHP message files. Again you need to supply the Yii2 message configuration and
+the directory path where your Excel files are:
 
 ```
 ./yii excel-message/import messages/config.php /input/dir
 ```
 
-Now the new translations have been added to your PHP message files. Yes it's
+This will add the new translations to your PHP message files. Yes it's
 really that simple.
 
-You should use the same file organisation as when creating the file: One file
-per language with language code as filename, one sheet per category, source
-messages in column `A`, translations in column `B`, first line is skipped.
+You can also pass a third parameter with the file extension, the default is `xlsx`
+as used by Excel2007 files. PHPExcel should also autodetect other Excel formats 
 
-You can also pass a third parameter with the file extension. Default is `xlsx` -
-but PHPExcel should also autodetect other Excel formats 
+> **Note:** The files must be provided in the same format as they where created by
+> the export:
+>  * One file per language with language code as filename
+>  * One sheet per category
+>  * Source messages in column `A`, translations in column `B`
+>  * First line is skipped.
 
 ## Options
 
