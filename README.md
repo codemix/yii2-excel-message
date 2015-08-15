@@ -4,7 +4,6 @@ Yii2 Excel Message
 [![Latest Stable Version](https://poser.pugx.org/codemix/yii2-excel-message/v/stable.svg)](https://packagist.org/packages/codemix/yii2-excel-message)
 [![Total Downloads](https://poser.pugx.org/codemix/yii2-excel-message/downloads)](https://packagist.org/packages/codemix/yii2-excel-message)
 [![Latest Unstable Version](https://poser.pugx.org/codemix/yii2-excel-message/v/unstable.svg)](https://packagist.org/packages/codemix/yii2-excel-message)
-[![HHVM Status](http://hhvm.h4cc.de/badge/yiisoft/yii2-dev.png)](http://hhvm.h4cc.de/package/codemix/yii2-excel-message)
 [![License](https://poser.pugx.org/codemix/yii2-excel-message/license.svg)](https://packagist.org/packages/codemix/yii2-excel-message)
 
 
