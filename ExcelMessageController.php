@@ -150,8 +150,8 @@ class ExcelMessageController extends Controller
                 $sheet = $excel->getSheetByName($category);
                 $row = 2;
                 while (($source = $sheet->getCellByColumnAndRow(0,$row)->getValue())!==null) {
-                    $translation = $sheet->getCellByColumnAndRow(1, $row)->getValue();
-                    if ($translation!==null && trim($translation)!=='') {
+                    $translation = (string)$sheet->getCellByColumnAndRow(1, $row)->getValue();
+                    if (trim($translation)!=='') {
                         if (!isset($messages[$language])) {
                             $messages[$language] = [];
                         }
