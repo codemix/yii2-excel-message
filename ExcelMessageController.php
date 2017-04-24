@@ -320,7 +320,7 @@ EOD;
     protected function languageIncluded($language)
     {
         if ($this->languages===null) {
-            return $this->ignoreLanguages===null ? false : in_array($language, explode(',', $this->ignoreLanguages));
+            return $this->ignoreLanguages===null ? true : !in_array($language, explode(',', $this->ignoreLanguages));
         } else {
             return in_array($language, explode(',', $this->languages));
         }
