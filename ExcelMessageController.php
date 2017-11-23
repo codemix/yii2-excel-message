@@ -24,11 +24,13 @@ class ExcelMessageController extends Controller
 
     /**
      * @var string Comma separated list of languages to process.
+     * Default are all languages listed in the messages config file.
      */
     public $languages;
 
     /**
      * @var string Comma separated list of categories to process.
+     * Default are all categories.
      */
     public $categories;
 
@@ -45,9 +47,10 @@ class ExcelMessageController extends Controller
     public $ignoreCategories;
 
     /**
-     * @var null|string The line height to set on created Excel files.
-     * By default the line height is set to auto, but this is broken for LibreOffice Calc.
-     * You can try values like `50` here to set a fixed line height instead.
+     * @var null|string The line height to set on created Excel files.  By
+     * default the line height is set to auto, but this is broken for
+     * LibreOffice Calc. You can try values like `50` here to set a fixed line
+     * height instead.
      */
     public $lineHeight;
 
@@ -66,13 +69,17 @@ class ExcelMessageController extends Controller
     /**
      * Creates Excel files with translations from PHP message files.
      *
-     * By default this command will go through all configured PHP message files and
-     * check for new translations. It will then write those missing translations
-     * to an Excel file, using one file per language and one sheet per category.
+     * By default this command will go through all configured PHP message files
+     * and check for new translations. It will then write those missing
+     * translations to an Excel file, using one file per language and one sheet
+     * per category.
      *
-     * @param string $configFile The path or alias of the message configuration file.
-     * @param string $excelDir The path or alias to the output directory for the Excel files.
-     * @param string $type The type of messages to include. Either 'new' (default) or 'all'.
+     * @param string $configFile The path or alias of the message configuration
+     * file.
+     * @param string $excelDir The path or alias to the output directory for
+     * the Excel files.
+     * @param string $type The type of messages to include. Either 'new'
+     * (default) or 'all'.
      * @throws Exception on failure.
      */
     public function actionExport($configFile, $excelDir, $type = 'new')
@@ -120,14 +127,17 @@ class ExcelMessageController extends Controller
     /**
      * Import the translations from Excel files into PHP message files.
      *
-     * By default this command will go through all found Excel files in the given directory,
-     * read out the non-empty translations and update the respective PHP message files. The
-     * files must be in the same structure as created by the export command: One file per
-     * language, with the language code as filename, one sheet per category, source is in
-     * column A, translation in column B. The first line gets ignored.
+     * By default this command will go through all found Excel files in the
+     * given directory, read out the non-empty translations and update the
+     * respective PHP message files. The files must be in the same structure as
+     * created by the export command: One file per language, with the language
+     * code as filename, one sheet per category, source is in column A,
+     * translation in column B. The first line gets ignored.
      *
-     * @param string $configFile The path or alias of the message configuration file.
-     * @param string $excelDir The path or alias to the input directory for the Excel files.
+     * @param string $configFile The path or alias of the message configuration
+     * file.
+     * @param string $excelDir The path or alias to the input directory for the
+     * Excel files.
      * @param string $extension The Excel file extension. Default is 'xlsx'.
      * @return void
      */
@@ -168,11 +178,12 @@ class ExcelMessageController extends Controller
     }
 
     /**
-     * Check whether arguments are valid
+     * Check whether arguments and config file are valid
      *
      * @param string $configFile the path or alias of the configuration file.
-     * @param string $excelDir the path or alias to the directory of the Excel files
-     * @return void
+     * @param string $excelDir the path or alias to the directory of the Excel
+     * files
+     * @return array the configuration from the config file
      */
     protected function checkArgs($configFile, $excelDir)
     {
