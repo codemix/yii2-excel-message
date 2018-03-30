@@ -1,4 +1,5 @@
 <?php
+
 namespace codemix\excelmessage;
 
 use Yii;
@@ -60,7 +61,7 @@ class ExcelMessageController extends Controller
     public function options($actionID)
     {
         $options = ['color', 'languages', 'categories', 'ignoreLanguages', 'ignoreCategories'];
-        if ($actionID==='export') {
+        if ($actionID === 'export') {
             $options[] = 'lineHeight';
         }
         return $options;
@@ -101,8 +102,10 @@ class ExcelMessageController extends Controller
                 }
                 $this->stdout("Reading $file ... ", Console::FG_GREEN);
                 $existing = require($file);
-                if ($type==='new') {
-                    $existing = array_filter($existing, function ($v) { return $v===''; });
+                if ($type === 'new') {
+                    $existing = array_filter($existing, function ($v) {
+                        return $v === '';
+                    });
                 }
                 foreach ($existing as $source => $translation) {
                     if (!isset($messages[$language])) {
@@ -116,7 +119,7 @@ class ExcelMessageController extends Controller
                 $this->stdout("Done.\n", Console::FG_GREEN);
             }
         }
-        if (count($messages)!==0) {
+        if (count($messages) !== 0) {
             $this->writeToExcelFiles($messages, $excelDir);
         } else {
             $this->stdout("No new translations found\n", Console::FG_GREEN);
@@ -145,7 +148,7 @@ class ExcelMessageController extends Controller
     {
         $config = $this->checkArgs($configFile, $excelDir);
         $messages = [];
-        foreach (glob(rtrim($excelDir, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.'*.'.$extension) as $file) {
+        foreach (glob(rtrim($excelDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . '*.' . $extension) as $file) {
             $language = pathinfo($file, PATHINFO_FILENAME);
             if (!$this->languageIncluded($language)) {
                 $this->stdout("Skipping language $language.\n", Console::FG_YELLOW);
@@ -159,9 +162,9 @@ class ExcelMessageController extends Controller
                 }
                 $sheet = $excel->getSheetByName($category);
                 $row = 2;
-                while (($source = $sheet->getCellByColumnAndRow(0,$row)->getValue())!==null) {
+                while (($source = $sheet->getCellByColumnAndRow(0, $row)->getValue()) !== null) {
                     $translation = (string)$sheet->getCellByColumnAndRow(1, $row)->getValue();
-                    if (trim($translation)!=='') {
+                    if (trim($translation) !== '') {
                         if (!isset($messages[$language])) {
                             $messages[$language] = [];
                         }
@@ -200,7 +203,7 @@ class ExcelMessageController extends Controller
             'format' => 'php',
         ], require($configFile));
 
-        if (empty($config['format']) || $config['format']!=='php') {
+        if (empty($config['format']) || $config['format'] !== 'php') {
             throw new Exception('Format must be "php".');
         }
         if (!isset($config['messagePath'])) {
@@ -223,7 +226,7 @@ class ExcelMessageController extends Controller
     protected function writeToExcelFiles($messages, $excelDir)
     {
         foreach ($messages as $language => $categories) {
-            $file = rtrim($excelDir, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.$language.'.xlsx';
+            $file = rtrim($excelDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $language . '.xlsx';
             $this->stdout("Writing Excel file for $language to $file ... ", Console::FG_GREEN);
             $excel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
             $index = 0;
@@ -241,15 +244,15 @@ class ExcelMessageController extends Controller
                 ]);
                 $row = 2;
                 foreach ($sources as $message => $translation) {
-                    $sheet->setCellValue('A'.$row, $message);
-                    $sheet->getStyle('A'.$row)->getAlignment()->setWrapText(true);
-                    if ($translation!=='') {
-                        $sheet->setCellValue('B'.$row, $translation);
-                        $sheet->getStyle('B'.$row)->getAlignment()->setWrapText(true);
+                    $sheet->setCellValue('A' . $row, $message);
+                    $sheet->getStyle('A' . $row)->getAlignment()->setWrapText(true);
+                    if ($translation !== '') {
+                        $sheet->setCellValue('B' . $row, $translation);
+                        $sheet->getStyle('B' . $row)->getAlignment()->setWrapText(true);
                     }
                     // This does not work with LibreOffice Calc, see:
                     // https://github.com/PHPOffice/PHPExcel/issues/588
-                    $sheet->getRowDimension($row)->setRowHeight($this->lineHeight===null ? -1 : $this->lineHeight);
+                    $sheet->getRowDimension($row)->setRowHeight($this->lineHeight === null ? -1 : $this->lineHeight);
                     $row++;
                 }
             }
@@ -273,7 +276,7 @@ class ExcelMessageController extends Controller
             $this->stdout("Updating translations for $language\n", Console::FG_GREEN);
             $dir = $config['messagePath'] . DIRECTORY_SEPARATOR . $language;
             foreach ($categories as $category => $translations) {
-                $file = $dir.DIRECTORY_SEPARATOR.$category.'.php';
+                $file = $dir . DIRECTORY_SEPARATOR . $category . '.php';
                 if (!file_exists($file)) {
                     $this->stdout("Category '$category' not found for language '$language' ($file) - Skipping", Console::FG_RED);
                 }
@@ -282,16 +285,18 @@ class ExcelMessageController extends Controller
                 foreach ($translations as $message => $translation) {
                     if (!array_key_exists($message, $existingMessages)) {
                         $this->stdout('Skipping (removed): ', Console::FG_YELLOW);
-                        $this->stdout($message."\n");
-                    } elseif ($existingMessages[$message]!=='') {
+                        $this->stdout($message . "\n");
+                    } elseif ($existingMessages[$message] !== '') {
                         $this->stdout('Skipping (exists): ', Console::FG_YELLOW);
-                        $this->stdout($message."\n");
+                        $this->stdout($message . "\n");
                     } else {
                         $existingMessages[$message] = $translation;
                     }
                 }
                 ksort($existingMessages);
-                $emptyMessages = array_filter($existingMessages, function ($v) { return $v===''; });
+                $emptyMessages = array_filter($existingMessages, function ($v) {
+                    return $v === '';
+                });
                 $translatedMessages = array_filter($existingMessages, 'strlen');
                 $array = VarDumper::export($emptyMessages + $translatedMessages);
 
@@ -330,8 +335,8 @@ EOD;
      */
     protected function languageIncluded($language)
     {
-        if ($this->languages===null) {
-            return $this->ignoreLanguages===null ? true : !in_array($language, explode(',', $this->ignoreLanguages));
+        if ($this->languages === null) {
+            return $this->ignoreLanguages === null ? true : !in_array($language, explode(',', $this->ignoreLanguages));
         } else {
             return in_array($language, explode(',', $this->languages));
         }
@@ -343,8 +348,8 @@ EOD;
      */
     protected function categoryIncluded($category)
     {
-        if ($this->categories===null) {
-            return $this->ignoreCategories===null ? true : !in_array($category, explode(',', $this->ignoreCategories));
+        if ($this->categories === null) {
+            return $this->ignoreCategories === null ? true : !in_array($category, explode(',', $this->ignoreCategories));
         } else {
             return in_array($category, explode(',', $this->categories));
         }
