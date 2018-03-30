@@ -9,8 +9,8 @@ use yii\helpers\Console;
 use yii\helpers\VarDumper;
 use \PhpOffice\PhpSpreadsheet\Spreadsheet;
 use \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
-use \PhpOffice\PhpSpreadsheet\IOFactory;
-use \PhpOffice\PhpSpreadsheet\Cell\DataType;
+use \PhpOffice\PhpSpreadsheet\IOFactory as PhpspreadsheetIOFactory;
+use \PhpOffice\PhpSpreadsheet\Cell\DataType as CellDataType;
 
 /**
  * Export new translations to Excel files from PHP message files and update PHP
@@ -154,7 +154,7 @@ class ExcelMessageController extends Controller
                 $this->stdout("Skipping language $language.\n", Console::FG_YELLOW);
                 continue;
             }
-            $excel = \PhpOffice\PhpSpreadsheet\IOFactory::load($file);
+            $excel = PhpspreadsheetIOFactory::load($file);
             foreach ($excel->getSheetNames() as $category) {
                 if (!$this->categoryIncluded($category)) {
                     $this->stdout("Skipping category $category.\n", Console::FG_YELLOW);
@@ -228,15 +228,15 @@ class ExcelMessageController extends Controller
         foreach ($messages as $language => $categories) {
             $file = rtrim($excelDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . $language . '.xlsx';
             $this->stdout("Writing Excel file for $language to $file ... ", Console::FG_GREEN);
-            $excel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+            $excel = new Spreadsheet();
             $index = 0;
             foreach ($categories as $category => $sources) {
-                $sheet = new \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet($excel, $category);
+                $sheet = new Worksheet($excel, $category);
                 $excel->addSheet($sheet, $index++);
                 $sheet->getColumnDimension('A')->setWidth(60);
                 $sheet->getColumnDimension('B')->setWidth(60);
-                $sheet->setCellValue('A1', 'Source', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
-                $sheet->setCellValue('B1', 'Translation', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                $sheet->setCellValue('A1', 'Source', CellDataType::TYPE_STRING);
+                $sheet->setCellValue('B1', 'Translation', CellDataType::TYPE_STRING);
                 $sheet->getStyle('A1:B1')->applyFromArray([
                     'font' => [
                         'bold' => true,
@@ -258,7 +258,7 @@ class ExcelMessageController extends Controller
             }
             $excel->removeSheetByIndex($index);
             $excel->setActiveSheetIndex(0);
-            $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($excel, "Xlsx");
+            $writer = PhpspreadsheetIOFactory::createWriter($excel, "Xlsx");
             $writer->save($file);
             $this->stdout("Done.\n", Console::FG_GREEN);
         }
