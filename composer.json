@@ -4,15 +4,13 @@
     "keywords": ["yii2", "i18n", "excel"],
     "type": "yii2-extension",
     "license": "MIT",
-    "authors": [
-        {
-            "name": "Michael Härtl",
-            "email": "haertl.mike@gmail.com"
-        }
-    ],
+    "authors": [{
+        "name": "Michael Härtl",
+        "email": "haertl.mike@gmail.com"
+    }],
     "require": {
-      "yiisoft/yii2": "*",
-      "phpoffice/phpexcel": "1.*"
+        "yiisoft/yii2": "*",
+        "phpoffice/phpspreadsheet": "^1.2"
     },
     "autoload": {
         "psr-4": {

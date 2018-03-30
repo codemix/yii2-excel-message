@@ -6,10 +6,10 @@ use yii\console\Exception;
 use yii\console\Controller;
 use yii\helpers\Console;
 use yii\helpers\VarDumper;
-use \PHPExcel;
-use \PHPExcel_Worksheet;
-use \PHPExcel_IOFactory;
-use \PHPExcel_Cell_DataType;
+use \PhpOffice\PhpSpreadsheet\Spreadsheet;
+use \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use \PhpOffice\PhpSpreadsheet\IOFactory;
+use \PhpOffice\PhpSpreadsheet\Cell\DataType;
 
 /**
  * Export new translations to Excel files from PHP message files and update PHP
@@ -151,7 +151,7 @@ class ExcelMessageController extends Controller
                 $this->stdout("Skipping language $language.\n", Console::FG_YELLOW);
                 continue;
             }
-            $excel = PHPExcel_IOFactory::load($file);
+            $excel = \PhpOffice\PhpSpreadsheet\IOFactory::load($file);
             foreach ($excel->getSheetNames() as $category) {
                 if (!$this->categoryIncluded($category)) {
                     $this->stdout("Skipping category $category.\n", Console::FG_YELLOW);
@@ -225,15 +225,15 @@ class ExcelMessageController extends Controller
         foreach ($messages as $language => $categories) {
             $file = rtrim($excelDir, DIRECTORY_SEPARATOR).DIRECTORY_SEPARATOR.$language.'.xlsx';
             $this->stdout("Writing Excel file for $language to $file ... ", Console::FG_GREEN);
-            $excel = new PHPExcel();
+            $excel = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
             $index = 0;
             foreach ($categories as $category => $sources) {
-                $sheet = new PHPExcel_Worksheet($excel, $category);
+                $sheet = new \PhpOffice\PhpSpreadsheet\Worksheet\Worksheet($excel, $category);
                 $excel->addSheet($sheet, $index++);
                 $sheet->getColumnDimension('A')->setWidth(60);
                 $sheet->getColumnDimension('B')->setWidth(60);
-                $sheet->setCellValue('A1', 'Source', PHPExcel_Cell_DataType::TYPE_STRING);
-                $sheet->setCellValue('B1', 'Translation', PHPExcel_Cell_DataType::TYPE_STRING);
+                $sheet->setCellValue('A1', 'Source', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
+                $sheet->setCellValue('B1', 'Translation', \PhpOffice\PhpSpreadsheet\Cell\DataType::TYPE_STRING);
                 $sheet->getStyle('A1:B1')->applyFromArray([
                     'font' => [
                         'bold' => true,
@@ -248,14 +248,14 @@ class ExcelMessageController extends Controller
                         $sheet->getStyle('B'.$row)->getAlignment()->setWrapText(true);
                     }
                     // This does not work with LibreOffice Calc, see:
-                    // https://github.com/PHPOffice/PHPExcel/issues/588
+                    // https://github.com/PHPOffice/\PhpOffice\PhpSpreadsheet\Spreadsheet/issues/588
                     $sheet->getRowDimension($row)->setRowHeight($this->lineHeight===null ? -1 : $this->lineHeight);
                     $row++;
                 }
             }
             $excel->removeSheetByIndex($index);
             $excel->setActiveSheetIndex(0);
-            $writer = PHPExcel_IOFactory::createWriter($excel, "Excel2007");
+            $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($excel, "Xlsx");
             $writer->save($file);
             $this->stdout("Done.\n", Console::FG_GREEN);
         }
