@@ -16,7 +16,7 @@ With this extension you can export messages from PHP message files to Excel,
 send them to your translators and read them back into your message files.
 
 > **Note:** To read and write to and from Excel file, we use the excellent
-> [PHPExcel](https://github.com/PHPOffice/PHPExcel) package.
+> [PhpSpreadsheet](https://github.com/PHPOffice/PhpSpreadsheet) package.
 
 
 ## Installation
@@ -75,7 +75,7 @@ This will add the new translations to your PHP message files. Yes it's
 really that simple.
 
 You can also pass a third parameter with the file extension, the default is `xlsx`
-as used by Excel2007 files. PHPExcel should also autodetect other Excel formats 
+as used by Excel 2007+ files. \PhpOffice\PhpSpreadsheet\Spreadsheet should also autodetect other Excel formats 
 
 > **Note:** The files must be provided in the same format as they where created by
 > the export:
