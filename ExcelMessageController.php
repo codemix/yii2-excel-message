@@ -248,7 +248,7 @@ class ExcelMessageController extends Controller
                         $sheet->getStyle('B'.$row)->getAlignment()->setWrapText(true);
                     }
                     // This does not work with LibreOffice Calc, see:
-                    // https://github.com/PHPOffice/\PhpOffice\PhpSpreadsheet\Spreadsheet/issues/588
+                    // https://github.com/PHPOffice/PHPExcel/issues/588
                     $sheet->getRowDimension($row)->setRowHeight($this->lineHeight===null ? -1 : $this->lineHeight);
                     $row++;
                 }
