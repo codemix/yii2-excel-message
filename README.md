@@ -75,7 +75,7 @@ This will add the new translations to your PHP message files. Yes it's
 really that simple.
 
 You can also pass a third parameter with the file extension, the default is `xlsx`
-as used by Excel 2007+ files. \PhpOffice\PhpSpreadsheet\Spreadsheet should also autodetect other Excel formats 
+as used by Excel 2007+ files. PhpSpreadsheet should also autodetect other Excel formats 
 
 > **Note:** The files must be provided in the same format as they where created by
 > the export:
