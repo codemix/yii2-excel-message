@@ -21,8 +21,6 @@ use \PhpOffice\PhpSpreadsheet\Cell\DataType as CellDataType;
  */
 class ExcelMessageController extends Controller
 {
-    public $defaultAction = 'export';
-
     /**
      * @var string Comma separated list of languages to process.
      * Default are all languages listed in the messages config file.
@@ -68,6 +66,15 @@ class ExcelMessageController extends Controller
     }
 
     /**
+     * Show this help message
+     */
+    public function actionIndex()
+    {
+        $helpController = Yii::$app->createController('help');
+        return $helpController[0]->runAction('index', ['excel-message']);
+    }
+
+    /**
      * Creates Excel files with translations from PHP message files.
      *
      * By default this command will go through all configured PHP message files
@@ -79,14 +86,14 @@ class ExcelMessageController extends Controller
      * file.
      * @param string $excelDir The path or alias to the output directory for
      * the Excel files.
-     * @param string $type The type of messages to include. Either 'new'
+     * @param string $type The type of messages to export. Either 'new'
      * (default) or 'all'.
      * @throws Exception on failure.
      */
     public function actionExport($configFile, $excelDir, $type = 'new')
     {
         $config = $this->checkArgs($configFile, $excelDir);
-        $messages = [];
+        $export = [];
         $sourceLanguage = Yii::$app->language;
         foreach ($config['languages'] as $language) {
             if (!$this->languageIncluded($language)) {
@@ -94,33 +101,34 @@ class ExcelMessageController extends Controller
                 continue;
             }
             $dir = $config['messagePath'] . DIRECTORY_SEPARATOR . $language;
-            foreach (glob("$dir/*.php") as $file) {
+            $messageFiles = glob("$dir/*.php");
+            foreach ($messageFiles as $file) {
                 $category = pathinfo($file, PATHINFO_FILENAME);
                 if (!$this->categoryIncluded($category)) {
                     $this->stdout("Skipping category $category.\n", Console::FG_YELLOW);
                     continue;
                 }
                 $this->stdout("Reading $file ... ", Console::FG_GREEN);
-                $existing = require($file);
+                $messages = require($file);
                 if ($type === 'new') {
-                    $existing = array_filter($existing, function ($v) {
+                    $messages = array_filter($messages, function ($v) {
                         return $v === '';
                     });
                 }
-                foreach ($existing as $source => $translation) {
-                    if (!isset($messages[$language])) {
-                        $messages[$language] = [];
+                foreach ($messages as $source => $translation) {
+                    if (!isset($export[$language])) {
+                        $export[$language] = [];
                     }
-                    if (!isset($messages[$language][$category])) {
-                        $messages[$language][$category] = [];
+                    if (!isset($export[$language][$category])) {
+                        $export[$language][$category] = [];
                     }
-                    $messages[$language][$category][$source] = $translation;
+                    $export[$language][$category][$source] = $translation;
                 }
                 $this->stdout("Done.\n", Console::FG_GREEN);
             }
         }
-        if (count($messages) !== 0) {
-            $this->writeToExcelFiles($messages, $excelDir);
+        if (count($export) !== 0) {
+            $this->writeToExcelFiles($export, $excelDir);
         } else {
             $this->stdout("No new translations found\n", Console::FG_GREEN);
         }
@@ -142,19 +150,21 @@ class ExcelMessageController extends Controller
      * @param string $excelDir The path or alias to the input directory for the
      * Excel files.
      * @param string $extension The Excel file extension. Default is 'xlsx'.
-     * @return void
+     * @param string $type The type of import. Either 'new' to only add missing
+     * messages or 'all' (default)  to add/update everything.
      */
-    public function actionImport($configFile, $excelDir, $extension = 'xlsx')
+    public function actionImport($configFile, $excelDir, $extension = 'xlsx', $type = 'all')
     {
         $config = $this->checkArgs($configFile, $excelDir);
         $messages = [];
-        foreach (glob(rtrim($excelDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . '*.' . $extension) as $file) {
-            $language = pathinfo($file, PATHINFO_FILENAME);
+        $excelFiles = glob(rtrim($excelDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR . '*.' . $extension);
+        foreach ($excelFiles as $excelFile) {
+            $language = pathinfo($excelFile, PATHINFO_FILENAME);
             if (!$this->languageIncluded($language)) {
                 $this->stdout("Skipping language $language.\n", Console::FG_YELLOW);
                 continue;
             }
-            $excel = PhpspreadsheetIOFactory::load($file);
+            $excel = PhpspreadsheetIOFactory::load($excelFile);
             foreach ($excel->getSheetNames() as $category) {
                 if (!$this->categoryIncluded($category)) {
                     $this->stdout("Skipping category $category.\n", Console::FG_YELLOW);
@@ -177,7 +187,8 @@ class ExcelMessageController extends Controller
                 }
             }
         }
-        $this->updateMessageFiles($messages, $config);
+        $this->updateMessageFiles($messages, $config, $type === 'new');
+        return self::EXIT_CODE_NORMAL;
     }
 
     /**
@@ -269,8 +280,10 @@ class ExcelMessageController extends Controller
      *
      * @param array $messages
      * @param array $config
+     * @param bool $skipExisting whether to skip messages that already have a
+     * translation
      */
-    protected function updateMessageFiles($messages, $config)
+    protected function updateMessageFiles($messages, $config, $skipExisting)
     {
         foreach ($messages as $language => $categories) {
             $this->stdout("Updating translations for $language\n", Console::FG_GREEN);
@@ -286,7 +299,7 @@ class ExcelMessageController extends Controller
                     if (!array_key_exists($message, $existingMessages)) {
                         $this->stdout('Skipping (removed): ', Console::FG_YELLOW);
                         $this->stdout($message . "\n");
-                    } elseif ($existingMessages[$message] !== '') {
+                    } elseif ($existingMessages[$message] !== '' && $skipExisting) {
                         $this->stdout('Skipping (exists): ', Console::FG_YELLOW);
                         $this->stdout($message . "\n");
                     } else {
